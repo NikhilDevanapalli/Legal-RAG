@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^python evaluate_ragas\\.py --model gpt-4o-mini --limit 2$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

@@ -1,5 +1,5 @@
 import os
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS, Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -7,8 +7,10 @@ from config import VECTOR_STORE_PATH, EMBEDDING_MODEL
 from data import load_corpus
 
 
-def get_embeddings():
-    return OpenAIEmbeddings(model=EMBEDDING_MODEL)
+def get_embeddings(embedding_model=None):
+    if embedding_model is None:
+        embedding_model = EMBEDDING_MODEL
+    return OpenAIEmbeddings(model=embedding_model)
 
 
 def build_vector_store(documents, embeddings):
@@ -29,14 +31,22 @@ def build_vector_store(documents, embeddings):
     return vector_store
 
 
-def load_or_create_vector_store():
-    """Load an existing FAISS index or create it from the corpus."""
-    embeddings = get_embeddings()
+def load_or_create_vector_store(vector_store_path=None, embedding_model=None):
+    """Load an existing FAISS index or create it from the corpus.
+    
+    Args:
+        vector_store_path: Path to the vector store. Defaults to VECTOR_STORE_PATH from config.
+        embedding_model: Embedding model to use. Defaults to EMBEDDING_MODEL from config.
+    """
+    if vector_store_path is None:
+        vector_store_path = VECTOR_STORE_PATH
+    
+    embeddings = get_embeddings(embedding_model=embedding_model)
 
-    if os.path.exists(VECTOR_STORE_PATH):
+    if os.path.exists(vector_store_path):
         print("Loading existing vector store...")
         return FAISS.load_local(
-            VECTOR_STORE_PATH,
+            vector_store_path,
             embeddings,
             allow_dangerous_deserialization=True,
         )
@@ -45,3 +55,8 @@ def load_or_create_vector_store():
     documents = load_corpus()
     print("Total documents:", len(documents))
     return build_vector_store(documents, embeddings)
+
+
+def load_or_create_chroma_vector_store():
+    """Alias for compatibility with existing entrypoints."""
+    return load_or_create_vector_store()

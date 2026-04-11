@@ -1,12 +1,12 @@
 from config import TOP_N_EMBEDDINGS
 from data import load_qa_dataset
-from vector_store import load_or_create_vector_store
+from vector_store import load_or_create_vector_store, load_or_create_chroma_vector_store
 from retriever import create_search_retriever
 from agent import create_legal_agent, get_rag_answer
 
 
 def main():
-    vector_store = load_or_create_vector_store()
+    vector_store = load_or_create_chroma_vector_store()
     retriever_tool, retriever = create_search_retriever(vector_store)
     agent = create_legal_agent(retriever_tool)
 
@@ -17,6 +17,8 @@ def main():
 
     retrieved_docs = retriever.invoke(query)
     print(f"\nRetrieved {len(retrieved_docs)} documents:")
+    results = vector_store.similarity_search(query, k=5)
+    print("Similarity results:", len(results))
     for i, doc in enumerate(retrieved_docs, 1):
         print(f"\nDocument {i}:")
         print(f"Title: {doc.metadata.get('title', 'N/A')}")
